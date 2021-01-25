@@ -1,0 +1,15 @@
+{
+  "name": "myproject",
+  "version": "1.0.0",
+  "description": "My first project",
+  "main": "index.js",
+  "dependencies": {
+    "mongodb": "^2.2.36"
+  },
+  "author": "William Marchant",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/christkv/myfirstproject/issues"
+  },
+  "homepage": "https://github.com/christkv/myfirstproject"
+}

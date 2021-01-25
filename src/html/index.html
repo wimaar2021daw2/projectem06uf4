@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de prueba</title>
+    <script src="../js/session_handler.js"></script>
+</head>
+<body>
+    <h1>Domino</h1>
+    <nav>
+        <ul id="menu-options">
+            <li><a href="/game_generate">Crear partida</a></li>
+            <li>
+                <form action="/partida" method="GET">
+                    <input type="text" name="id"/>
+                    <input type="submit" value="Unirse" placeholder="Código de partida"/>
+                </form>
+            </li>
+            <li><a href="/close">Desconectarse</a></li>
+        </ul>
+    </nav>
+    <hr>
+    <main>
+        <h1>Perfil</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre de usuario</th>
+                    <th>Victorias</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="perfil_username"></td>
+                    <td id="perfil_wins"></td>
+                </tr>
+            </tbody>
+        </table>
+        <style>
+            table{
+                border-collapse: collapse;
+            }
+
+            td, th{
+                border: 1px solid black;
+                padding: 10px;
+                text-align: center;
+            }
+        </style>
+    </main>
+</body>
+</html>
