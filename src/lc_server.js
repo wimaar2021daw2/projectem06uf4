@@ -5,12 +5,18 @@
     const fs = require('fs');
     const url = require('url');
     const querystring = require('querystring');
+    var partida = new Array();
+    var jugador = new Array();
 
     const requestListener = function (req, res) {
-        let idPartida = Math.random().toString(36).substr(2, 9);
         var pathname = url.parse(req.url).pathname;
         var consulta = url.parse(req.url).query;
         let fileURL;
+        var MongoClient = require('mongodb').MongoClient;
+        var assert = require('assert'); //utilitzem assercions
+
+        var ObjectId = require('mongodb').ObjectID;
+        var ruta = 'mongodb://localhost:27017/domino';
 
         console.log('Ruta obtenida: '+pathname);
         
@@ -19,17 +25,19 @@
             var QStringValue = querystring.parse(consulta);
         }
 
+        let dataPosting = '';
+
         if(pathname == '/'){
             fileURL = './src/html/index.html';
         }else if(allowedFile(pathname)){
             fileURL = './src'+pathname;
         }else if(pathname == '/game_generate'){
+            let idPartida = Math.random().toString(36).substr(2, 9);
             partida.push(new Partida(idPartida));
             fileURL = 'redirect';
         }else if(pathname == '/consulta_partida'){
             fileURL = 'fetch';
         }else if(pathname == '/registrar'){
-            let dataPosting = '';
             console.log('Intento 1 de recibir Mediante método POST');
             req.setEncoding('utf8');
             req.addListener('data', function(data){
@@ -38,12 +46,6 @@
             });
             
             req.addListener('end', () => {
-                var MongoClient = require('mongodb').MongoClient;
-                var assert = require('assert'); //utilitzem assercions
-
-                var ObjectId = require('mongodb').ObjectID;
-                var ruta = 'mongodb://localhost:27017/domino';
-
                 let toInsert = querystring.parse(dataPosting);
                 let newUser = {
                     id: Math.random().toString(36).substr(2, 9),
@@ -70,6 +72,8 @@
             fileURL = 'retornar';
         }else if(pathname == '/sesion'){
             fileURL = 'sesion';
+        }else if(pathname == '/session_auth'){
+            fileURL = 'session_auth';
         }else{
             fileURL = './src/html'+pathname+'.html';
         }
@@ -98,6 +102,75 @@
             });
             res.write(`<script>location.href = '/login';</script>`);
             res.end();
+        }else if(fileURL == 'sesion'){
+            let login = false;
+            let userid = '';
+            req.setEncoding('utf8');
+            req.addListener('data', function(data){
+                dataPosting += data;
+            });
+
+            req.addListener('end', ()=>{
+                let loginAttemp = querystring.parse(dataPosting);
+                MongoClient.connect(ruta, function (err, db) {
+                    assert.equal(null, err);
+                    var cursor = db.collection('users').find();
+                    cursor.each(function (err, doc) {
+                        assert.equal(err, null);
+                        if (doc != null) {
+                            if(doc.username == loginAttemp.username){
+                                if(doc.password == loginAttemp.password){
+                                    jugador.push(new Jugador(doc.id, doc.username, doc.wins));
+                                    login = true;
+                                    userid = doc.id;
+                                }
+                            }
+                        }
+                    });
+                    setTimeout(()=>{
+                        if(login){
+                            res.writeHead(200, {
+                                'Content-Type' : 'text/html'
+                            });
+                            res.write(`<script>
+                                    document.cookie = 'userid=${userid}'
+                                    location.href = '/';
+                                    </script>`
+                            );
+                            res.end();
+                        }else{
+                            res.writeHead(200, {
+                                'Content-Type' : 'text/html'
+                            });
+                            res.write(`<script>
+                                    location.href = '/login';
+                                    </script>`
+                            );
+                        }
+                    }, 2000);
+                });
+            });
+        }else if(fileURL == 'session_auth'){
+            let sessionVar = false;
+            for(item of jugador){
+                if(QStringValue.userid == item.id){
+                    sessionVar = true;
+                    break;
+                }
+            }
+            if(sessionVar){
+                res.writeHead(200, {
+                    'Content-Type' : 'application/json'
+                });
+                res.write(JSON.stringify({value: true}));
+                res.end();
+            }else{
+                res.writeHead(200, {
+                    'Content-Type' : 'application/json'
+                });
+                res.write(JSON.stringify({value: false}));
+                res.end();
+            }
         }else{
             fs.readFile(fileURL, (err, data) => {
                 if(err){
@@ -201,7 +274,7 @@ class Jugador{
         this.nombre = nombre;
         this.wins = wins;
         this.slot = [];
-        this.partida = null;
+        this.partida = undefined;
     }
 }
 //MongoDB

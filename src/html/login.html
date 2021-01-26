@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página de prueba</title>
+    <script src="../js/session_handler.js"></script>
 </head>
 <body>
     <nav>
         <ul>
-            <li><a href="/">Volver</a></li>
             <li><a href="/signin">Registrarse</a></li>
         </ul>
     </nav>
-    <form id="loginForm">
+    <form method="POST" action="/sesion">
         <style>
             section{
                 padding: 10px 0px 10px 0px;
             }
         </style>
         <section>
-            Nombre de usuario: <input type="text" name="user"/>
+            Nombre de usuario: <input type="text" name="username"/>
         </section>
         <section>
             Contraseña: <input type="password" name="password"/>
